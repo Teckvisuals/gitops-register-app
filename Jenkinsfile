@@ -1,5 +1,5 @@
 pipeline {
-    agent { label "Jenkins-Agent" }
+    agent any
     environment {
               APP_NAME = "register-app-pipeline"
     }
@@ -13,7 +13,7 @@ pipeline {
 
         stage("Checkout from SCM") {
                steps {
-                   git branch: 'main', credentialsId: 'github', url: 'https://github.com/Ashfaque-9x/gitops-register-app'
+                   git branch: 'main', credentialsId: 'github', url: 'https://github.com/Teckvisuals/gitops-register-app'
                }
         }
 
@@ -30,16 +30,22 @@ pipeline {
         stage("Push the changed deployment file to Git") {
             steps {
                 sh """
-                   git config --global user.name "Ashfaque-9x"
-                   git config --global user.email "ashfaque.s510@gmail.com"
+                   git config --global user.name "teckvisuals"
+                   git config --global user.email "teckvisuals1@gmail.com"
                    git add deployment.yaml
                    git commit -m "Updated Deployment Manifest"
                 """
-                withCredentials([gitUsernamePassword(credentialsId: 'github', gitToolName: 'Default')]) {
-                  sh "git push https://github.com/Ashfaque-9x/gitops-register-app main"
+                withCredentials([gitUsernamePassword(credentialsId: 'Teckvisuals-Git-Cred', gitToolName: 'Default')]) {
+                  sh "git push https://github.com/Teckvisuals/gitops-register-app main"
                 }
             }
         }
-      
+      stage('Deploy to k8s'){
+            steps{
+                script{
+                    kubernetesDeploy (configs: 'deploymentservice.yaml',kubeconfigId: 'k8sconfigpwd')
+                }
+            }
+        }
     }
 }
